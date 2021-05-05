@@ -35,15 +35,27 @@ class PlayerWidget extends StatelessWidget {
         children: <Widget>[
           Container(
             color: Colors.grey.shade200,
-            child: ListTile(
-              leading: setLeading(model),
-              title: setTitle(model),
-              subtitle: setSubtitle(model),
-              contentPadding: EdgeInsets.symmetric(vertical: 4, horizontal: 16),
-              trailing: IconButton(
-                icon: setIcon(model),
-                onPressed: setCallback(context, model),
-              ),
+            child: Column(
+              children: [
+                Container(height: 10),
+                ListTile(
+                  leading: setLeading(model),
+                  title: setTitle(model),
+                  subtitle: setSubtitle(model),
+                  contentPadding: EdgeInsets.symmetric(vertical: 4, horizontal: 16),
+                  trailing: Wrap(
+                    spacing: 12,
+                    children: [
+                      IconButton(
+                          icon: Icon(Icons.fast_forward), onPressed: skipAhead(context, model)),
+                      IconButton(
+                        icon: setIcon(model),
+                        onPressed: setCallback(context, model),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -59,7 +71,7 @@ class PlayerWidget extends StatelessWidget {
   }
 
   Widget setLeading(AudioPlayerModel model) {
-      return new Image.asset(model.audio.metas.image.path);
+    return new Image.asset(model.audio.metas.image.path);
   }
 
   Widget setTitle(AudioPlayerModel model) {
@@ -73,13 +85,17 @@ class PlayerWidget extends StatelessWidget {
   Function setCallback(BuildContext context, AudioPlayerModel model) {
     if (model.isPlaying)
       return () {
-        BlocProvider.of<AudioPlayerBloc>(context)
-            .add(TriggeredPauseAudio(model));
+        BlocProvider.of<AudioPlayerBloc>(context).add(TriggeredPauseAudio(model));
       };
     else
       return () {
-        BlocProvider.of<AudioPlayerBloc>(context)
-            .add(TriggeredPlayAudio(model));
+        BlocProvider.of<AudioPlayerBloc>(context).add(TriggeredPlayAudio(model));
       };
+  }
+
+  Function skipAhead(BuildContext context, AudioPlayerModel model) {
+    return () {
+      BlocProvider.of<AudioPlayerBloc>(context).add(TriggeredSkipAhead(model));
+    };
   }
 }
