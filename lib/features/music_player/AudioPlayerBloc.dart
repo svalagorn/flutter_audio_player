@@ -13,7 +13,7 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
 
   List<StreamSubscription> playerSubscriptions = [];
 
-  AudioPlayerBloc({this.assetsAudioPlayer, this.audioPlayerRepository}) {
+  AudioPlayerBloc({this.assetsAudioPlayer, this.audioPlayerRepository}) : super(null) {
     playerSubscriptions.add(assetsAudioPlayer.playerState.listen((event) {
       _mapPlayerStateToEvent(event);
     }));
@@ -47,6 +47,10 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
     if (event is TriggeredPauseAudio) {
       yield* _mapTriggeredPausedAudio(event);
     }
+
+    if (event is TriggeredSkipAhead) {
+      yield* _mapTriggeredSkipAhead(event);
+    }
   }
 
   @override
@@ -61,9 +65,9 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
     if (playerState == PlayerState.stop) {
       add(AudioStopped());
     } else if (playerState == PlayerState.pause) {
-      add(AudioPaused(assetsAudioPlayer.current.value.audio.audio.metas.id));
+      add(AudioPaused(assetsAudioPlayer.current.valueWrapper.value.audio.audio.metas.id));
     } else if (playerState == PlayerState.play) {
-      add(AudioPlayed(assetsAudioPlayer.current.value.audio.audio.metas.id));
+      add(AudioPlayed(assetsAudioPlayer.current.valueWrapper.value.audio.audio.metas.id));
     }
   }
 
@@ -151,5 +155,14 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
     await assetsAudioPlayer.pause();
 
     yield AudioPlayerPaused(updatedModel, updatedList);
+  }
+
+  Stream<AudioPlayerState> _mapTriggeredSkipAhead(TriggeredSkipAhead event) async* {
+    final AudioPlayerModel updatedModel = event.audioPlayerModel.copyWithIsPlaying(true);
+    final updatedList = await audioPlayerRepository.updateModel(updatedModel);
+    print("skipping");
+    await assetsAudioPlayer.seekBy(Duration(seconds: 10));
+
+    yield AudioPlayerPlaying(updatedModel, updatedList);
   }
 }

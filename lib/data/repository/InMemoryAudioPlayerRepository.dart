@@ -3,6 +3,7 @@ import 'package:flutteraudioplayer/data/model/AudioPlayerModel.dart';
 import 'AudioPlayerRepository.dart';
 
 class InMemoryAudioPlayerRepository implements AudioPlayerRepository {
+  //this is the object created in main.dart, hence the class name I guess
 
   final List<AudioPlayerModel> audioPlayerModels;
 
@@ -18,10 +19,10 @@ class InMemoryAudioPlayerRepository implements AudioPlayerRepository {
     return Future.value(audioPlayerModels);
   }
 
-
   @override
   Future<List<AudioPlayerModel>> updateModel(AudioPlayerModel updatedModel) {
-    audioPlayerModels[audioPlayerModels.indexWhere((element) => element.id == updatedModel.id)] = updatedModel;
+    audioPlayerModels[audioPlayerModels.indexWhere((element) => element.id == updatedModel.id)] =
+        updatedModel;
     return Future.value(audioPlayerModels);
   }
 

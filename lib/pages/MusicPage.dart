@@ -11,30 +11,20 @@ class MusicPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
         alignment: Alignment.center,
-        child: BlocBuilder<AudioPlayerBloc, AudioPlayerState>(
-            builder: (context, state) {
-              if (state is AudioPlayerInitial) {
-                BlocProvider.of<AudioPlayerBloc>(context).add(
-                    InitializeAudio());
-                return buildCircularProgress();
-              }
-
-              else if (state is AudioPlayerReady) {
-                return buildReadyTrackList(state);
-              }
-
-              else if (state is AudioPlayerPlaying) {
-                return buildPlayingTrackList(state);
-              }
-
-              else if (state is AudioPlayerPaused) {
-                return buildPausedTrackList(state);
-              }
-
-              else {
-                return buildUnknownStateError();
-              }
-            }));
+        child: BlocBuilder<AudioPlayerBloc, AudioPlayerState>(builder: (context, state) {
+          if (state is AudioPlayerInitial) {
+            BlocProvider.of<AudioPlayerBloc>(context).add(InitializeAudio());
+            return buildCircularProgress();
+          } else if (state is AudioPlayerReady) {
+            return buildReadyTrackList(state);
+          } else if (state is AudioPlayerPlaying) {
+            return buildPlayingTrackList(state);
+          } else if (state is AudioPlayerPaused) {
+            return buildPausedTrackList(state);
+          } else {
+            return buildUnknownStateError();
+          }
+        }));
   }
 
   Widget buildReadyTrackList(AudioPlayerReady state) {
@@ -55,8 +45,7 @@ class MusicPage extends StatelessWidget {
           child: ListView.builder(
               padding: EdgeInsets.only(bottom: 124),
               itemBuilder: (BuildContext context, int index) {
-                return AudioTrackWidget(
-                    audioPlayerModel: state.entityList[index]);
+                return AudioTrackWidget(audioPlayerModel: state.entityList[index]);
               },
               itemCount: state.entityList.length),
         ),
@@ -78,8 +67,7 @@ class MusicPage extends StatelessWidget {
           child: ListView.builder(
               padding: EdgeInsets.only(bottom: 96),
               itemBuilder: (BuildContext context, int index) {
-                return AudioTrackWidget(
-                    audioPlayerModel: state.entityList[index]);
+                return AudioTrackWidget(audioPlayerModel: state.entityList[index]);
               },
               itemCount: state.entityList.length),
         ),
