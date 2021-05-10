@@ -44,9 +44,13 @@ class _AudioPositionWidgetState extends State<AudioPositionWidget> {
       //20210505: Should probably use BlocBuilder here? nah, all that stuff is handled by the parent
       child: SliderTheme(
         data: SliderThemeData(
-            thumbShape: SliderComponentShape.noThumb,
-            trackShape: CustomTrackShape(),
-            trackHeight: 3),
+          thumbShape: SliderComponentShape.noThumb,
+          trackShape: CustomTrackShape(),
+          trackHeight: 3,
+          //Alphas taken from SliderThemeData.fromPrimaryColors:
+          disabledActiveTrackColor: Theme.of(context).colorScheme.primary.withAlpha(0xff),
+          disabledInactiveTrackColor: Theme.of(context).colorScheme.primary.withAlpha(0x3d),
+        ),
         child: Slider(
           min: 0,
           max: widget.duration.inMilliseconds.toDouble(),

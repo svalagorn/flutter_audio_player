@@ -164,9 +164,10 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
   }
 
   Stream<AudioPlayerState> _mapTriggeredSkipAhead(TriggeredSkipAhead event) async* {
+    //Can you skip if not currently playing?
     final AudioPlayerModel updatedModel = event.audioPlayerModel.copyWithIsPlaying(true);
     final updatedList = await audioPlayerRepository!.updateModel(updatedModel);
-    print("skipping");
+
     await assetsAudioPlayer!.seekBy(Duration(seconds: 10));
 
     yield AudioPlayerPlaying(updatedModel, updatedList);

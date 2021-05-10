@@ -29,8 +29,7 @@ class App extends StatelessWidget {
       providers: [
         RepositoryProvider<AudioPlayerRepository>(
           create: (context) => InMemoryAudioPlayerRepository(
-              audioPlayerModels: AudioPlayerModelFactory.getAudioPlayerModels()
-          ),
+              audioPlayerModels: AudioPlayerModelFactory.getAudioPlayerModels()),
         ),
       ],
       child: MultiBlocProvider(
@@ -38,14 +37,20 @@ class App extends StatelessWidget {
           BlocProvider<AudioPlayerBloc>(
             create: (BuildContext context) => AudioPlayerBloc(
                 assetsAudioPlayer: AssetsAudioPlayer.newPlayer(),
-                audioPlayerRepository:
-                    RepositoryProvider.of<AudioPlayerRepository>(context)),
+                audioPlayerRepository: RepositoryProvider.of<AudioPlayerRepository>(context)),
           ),
         ],
         child: MaterialApp(
-            title: "Audio player",
-            debugShowCheckedModeBanner: false,
-            home: MainScreen()),
+          title: "Audio player",
+          debugShowCheckedModeBanner: false,
+          theme: ThemeData(
+            primarySwatch: Colors.green, //TODO Choose something more specific
+            accentColor: Colors.orange, //amber better?
+            fontFamily: "Lato", //TODO import font
+            visualDensity: VisualDensity.adaptivePlatformDensity,
+          ),
+          home: MainScreen(),
+        ),
       ),
     );
   }
@@ -56,9 +61,8 @@ class MainScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text("Audio player"),
+          title: Text("Audio player for GGB"),
         ),
-        body: MusicPage()
-    );
+        body: MusicPage());
   }
 }

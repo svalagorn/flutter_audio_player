@@ -65,24 +65,46 @@ class PlayerWidget extends StatelessWidget {
                 //       duration: info.duration,
                 //       seekTo: (to) => player.seek(to));
                 // }),
-                ListTile(
-                  leading: setLeading(model),
-                  title: setTitle(model),
-                  subtitle: setSubtitle(model),
-                  contentPadding: EdgeInsets.symmetric(vertical: 4, horizontal: 16),
-                  trailing: Wrap(
-                    spacing: 12,
+                SizedBox(
+                  height: 75, //assigned height of the ListTile - position widget TODO: MediaQuery
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      IconButton(
-                          icon: Icon(Icons.fast_forward),
-                          onPressed: () => skipAhead(context, model)),
-                      IconButton(
-                        icon: setIcon(model),
-                        onPressed: setCallback(context, model) as void Function()?,
+                      setLeading(model),
+                      Padding(
+                        padding: const EdgeInsets.only(right: 30.0),
+                        child: setTitle(model),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(right: 15.0),
+                        child: IconButton(
+                          icon: setIcon(model),
+                          onPressed: setCallback(context, model) as void Function()?,
+                        ),
                       ),
                     ],
                   ),
-                ),
+                )
+                // ListTile(
+                //   leading: setLeading(model),
+                //   title: setTitle(model),
+                //   subtitle: setSubtitle(model),
+                //   //dense: true,
+                //   //visualDensity: VisualDensity(horizontal: 0, vertical: -4),
+                //   contentPadding: EdgeInsets.zero,
+                //   trailing: Wrap(
+                //     spacing: 12,
+                //     children: [
+                //       // IconButton(
+                //       //     icon: Icon(Icons.fast_forward),
+                //       //     onPressed: () => skipAhead(context, model)),
+                //       IconButton(
+                //         icon: setIcon(model),
+                //         onPressed: setCallback(context, model) as void Function()?,
+                //       ),
+                //     ],
+                //   ),
+                // ),
               ],
             ),
           ),
@@ -99,11 +121,17 @@ class PlayerWidget extends StatelessWidget {
   }
 
   Widget setLeading(AudioPlayerModel model) {
-    return new Image.asset(model.audio!.metas.image!.path);
+    return new Image.asset(
+      model.audio!.metas.image!.path,
+//      fit: BoxFit.scaleDown,
+    );
   }
 
   Widget setTitle(AudioPlayerModel model) {
-    return Text(model.audio!.metas.title!);
+    return Text(
+      model.audio!.metas.title!,
+      //style: TextStyle(color: Colors.white),
+    );
   }
 
   Widget setSubtitle(AudioPlayerModel model) {
