@@ -1,3 +1,4 @@
+import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -6,8 +7,10 @@ import 'package:flutteraudioplayer/features/music_player/AudioPlayerBloc.dart';
 import 'package:flutteraudioplayer/features/music_player/AudioPlayerEvent.dart';
 import 'package:flutteraudioplayer/features/music_player/AudioPlayerState.dart';
 
+import 'AudioPositionWidget.dart';
+
 class PlayerWidget extends StatelessWidget {
-  const PlayerWidget({Key key}) : super(key: key);
+  const PlayerWidget({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -29,6 +32,7 @@ class PlayerWidget extends StatelessWidget {
   }
 
   Widget _showPlayer(BuildContext context, AudioPlayerModel model) {
+    final player = BlocProvider.of<AudioPlayerBloc>(context).assetsAudioPlayer!;
     return Container(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.end,
@@ -37,7 +41,30 @@ class PlayerWidget extends StatelessWidget {
             color: Colors.grey.shade200,
             child: Column(
               children: [
-                Container(height: 10),
+                //get real time playing info for position
+                StreamBuilder(
+                  stream: player.realtimePlayingInfos,
+                  builder: (BuildContext context, AsyncSnapshot<RealtimePlayingInfos> snapshot) {
+                    if (!snapshot.hasData) {
+                      return const SizedBox();
+                    }
+                    final playing = snapshot.data!;
+                    return AudioPositionWidget(
+                        currentPosition: playing.currentPosition,
+                        duration: playing.duration,
+                        seekTo: (to) => player.seek(to));
+                  },
+                ),
+                //20210509 Alternativt sätt med mer abstraktion:
+                // player.builderRealtimePlayingInfos(builder: (context, RealtimePlayingInfos? info) {
+                //   if (info == null) {
+                //     return SizedBox();
+                //   }
+                //   return AudioPositionWidget(
+                //       currentPosition: info.currentPosition,
+                //       duration: info.duration,
+                //       seekTo: (to) => player.seek(to));
+                // }),
                 ListTile(
                   leading: setLeading(model),
                   title: setTitle(model),
@@ -47,10 +74,11 @@ class PlayerWidget extends StatelessWidget {
                     spacing: 12,
                     children: [
                       IconButton(
-                          icon: Icon(Icons.fast_forward), onPressed: skipAhead(context, model)),
+                          icon: Icon(Icons.fast_forward),
+                          onPressed: () => skipAhead(context, model)),
                       IconButton(
                         icon: setIcon(model),
-                        onPressed: setCallback(context, model),
+                        onPressed: setCallback(context, model) as void Function()?,
                       ),
                     ],
                   ),
@@ -64,26 +92,26 @@ class PlayerWidget extends StatelessWidget {
   }
 
   Widget setIcon(AudioPlayerModel model) {
-    if (model.isPlaying)
+    if (model.isPlaying!)
       return Icon(Icons.pause);
     else
       return Icon(Icons.play_arrow);
   }
 
   Widget setLeading(AudioPlayerModel model) {
-    return new Image.asset(model.audio.metas.image.path);
+    return new Image.asset(model.audio!.metas.image!.path);
   }
 
   Widget setTitle(AudioPlayerModel model) {
-    return Text(model.audio.metas.title);
+    return Text(model.audio!.metas.title!);
   }
 
   Widget setSubtitle(AudioPlayerModel model) {
-    return Text(model.audio.metas.artist);
+    return Text(model.audio!.metas.artist!);
   }
 
   Function setCallback(BuildContext context, AudioPlayerModel model) {
-    if (model.isPlaying)
+    if (model.isPlaying!)
       return () {
         BlocProvider.of<AudioPlayerBloc>(context).add(TriggeredPauseAudio(model));
       };

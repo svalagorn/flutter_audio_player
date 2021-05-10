@@ -8,7 +8,7 @@ import 'package:flutteraudioplayer/features/music_player/AudioPlayerEvent.dart';
 class AudioTrackWidget extends StatelessWidget {
   final AudioPlayerModel audioPlayerModel;
 
-  const AudioTrackWidget({Key key, @required this.audioPlayerModel})
+  const AudioTrackWidget({Key? key, required this.audioPlayerModel})
       : super(key: key);
 
   @override
@@ -19,32 +19,32 @@ class AudioTrackWidget extends StatelessWidget {
       subtitle: setSubtitle(),
       trailing: IconButton(
         icon: setIcon(),
-        onPressed: setCallback(context),
+        onPressed: setCallback(context) as void Function()?,
       ),
     );
   }
 
   Widget setIcon() {
-    if (audioPlayerModel.isPlaying)
+    if (audioPlayerModel.isPlaying!)
       return Icon(Icons.pause);
     else
       return Icon(Icons.play_arrow);
   }
 
   Widget setLeading() {
-    return new Image.asset(audioPlayerModel.audio.metas.image.path);
+    return new Image.asset(audioPlayerModel.audio!.metas.image!.path);
   }
 
   Widget setTitle() {
-    return Text(audioPlayerModel.audio.metas.title);
+    return Text(audioPlayerModel.audio!.metas.title!);
   }
 
   Widget setSubtitle() {
-    return Text(audioPlayerModel.audio.metas.artist);
+    return Text(audioPlayerModel.audio!.metas.artist!);
   }
 
   Function setCallback(BuildContext context) {
-    if (audioPlayerModel.isPlaying)
+    if (audioPlayerModel.isPlaying!)
       return () {
         BlocProvider.of<AudioPlayerBloc>(context)
             .add(TriggeredPauseAudio(audioPlayerModel));

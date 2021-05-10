@@ -40,21 +40,21 @@ class TriggeredSkipAhead extends AudioPlayerEvent {
 }
 
 class AudioPlayed extends AudioPlayerEvent {
-  final String audioModelMetaId;
+  final String? audioModelMetaId;
 
   const AudioPlayed(this.audioModelMetaId);
 
   @override
-  List<Object> get props => [audioModelMetaId];
+  List<Object?> get props => [audioModelMetaId];
 }
 
 class AudioPaused extends AudioPlayerEvent {
-  final String audioModelMetaId;
+  final String? audioModelMetaId;
 
   const AudioPaused(this.audioModelMetaId);
 
   @override
-  List<Object> get props => [audioModelMetaId];
+  List<Object?> get props => [audioModelMetaId];
 }
 
 class AudioStopped extends AudioPlayerEvent {

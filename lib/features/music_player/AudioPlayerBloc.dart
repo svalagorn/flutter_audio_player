@@ -8,13 +8,14 @@ import 'AudioPlayerEvent.dart';
 import 'AudioPlayerState.dart';
 
 class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
-  final AssetsAudioPlayer assetsAudioPlayer;
-  final AudioPlayerRepository audioPlayerRepository;
+  final AssetsAudioPlayer? assetsAudioPlayer;
+  final AudioPlayerRepository? audioPlayerRepository;
 
   List<StreamSubscription> playerSubscriptions = [];
 
-  AudioPlayerBloc({this.assetsAudioPlayer, this.audioPlayerRepository}) : super(null) {
-    playerSubscriptions.add(assetsAudioPlayer.playerState.listen((event) {
+  AudioPlayerBloc({this.assetsAudioPlayer, this.audioPlayerRepository})
+      : super(AudioPlayerInitial()) {
+    playerSubscriptions.add(assetsAudioPlayer!.playerState.listen((event) {
       _mapPlayerStateToEvent(event);
     }));
   }
@@ -25,7 +26,7 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
   @override
   Stream<AudioPlayerState> mapEventToState(AudioPlayerEvent event) async* {
     if (event is InitializeAudio) {
-      final audioList = await audioPlayerRepository.getAll();
+      final audioList = await audioPlayerRepository!.getAll();
       yield AudioPlayerReady(audioList);
     }
 
@@ -54,65 +55,70 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
   }
 
   @override
-  Future<Function> close() {
+  Future<Function?> close() {
     playerSubscriptions.forEach((element) {
       element.cancel();
     });
-    return assetsAudioPlayer.dispose();
+    return assetsAudioPlayer!.dispose() as Future<Function?>;
   }
 
   void _mapPlayerStateToEvent(PlayerState playerState) {
+    // assetsAudioPlayer!.current.listen((playing){
+    //     final id = playing?.audio.audio.metas.id;
+    //     //final songDuration = playing.audio.duration;
+    // });
     if (playerState == PlayerState.stop) {
       add(AudioStopped());
-    } else if (playerState == PlayerState.pause) {
-      add(AudioPaused(assetsAudioPlayer.current.valueWrapper.value.audio.audio.metas.id));
-    } else if (playerState == PlayerState.play) {
-      add(AudioPlayed(assetsAudioPlayer.current.valueWrapper.value.audio.audio.metas.id));
+    } else if (playerState == PlayerState.pause &&
+        assetsAudioPlayer!.current.valueWrapper != null) {
+      add(AudioPaused(assetsAudioPlayer!.current.valueWrapper?.value!.audio.audio.metas.id));
+    } else if (playerState == PlayerState.play && assetsAudioPlayer!.current.valueWrapper != null) {
+      add(AudioPlayed(assetsAudioPlayer!.current.valueWrapper?.value!.audio.audio.metas.id));
     }
   }
 
   Stream<AudioPlayerState> _mapAudioPlayedToState(AudioPlayed event) async* {
-    final List<AudioPlayerModel> currentList = await audioPlayerRepository.getAll();
+    final List<AudioPlayerModel> currentList = await audioPlayerRepository!.getAll();
     final List<AudioPlayerModel> updatedList = currentList
-        .map((audioModel) => audioModel.audio.metas.id == event.audioModelMetaId
+        .map((audioModel) => audioModel.audio!.metas.id == event.audioModelMetaId
             ? audioModel.copyWithIsPlaying(true)
             : audioModel.copyWithIsPlaying(false))
         .toList();
-    await audioPlayerRepository.updateAllModels(updatedList);
+    await audioPlayerRepository!.updateAllModels(updatedList);
     final AudioPlayerModel currentlyPlaying =
-        updatedList.firstWhere((model) => model.audio.metas.id == event.audioModelMetaId);
+        updatedList.firstWhere((model) => model.audio!.metas.id == event.audioModelMetaId);
     yield AudioPlayerPlaying(currentlyPlaying, updatedList);
   }
 
   Stream<AudioPlayerState> _mapAudioPausedToState(AudioPaused event) async* {
-    final List<AudioPlayerModel> currentList = await audioPlayerRepository.getAll();
+    final List<AudioPlayerModel> currentList = await audioPlayerRepository!.getAll();
     final List<AudioPlayerModel> updatedList = currentList
-        .map((audioModel) => audioModel.audio.metas.id == event.audioModelMetaId
+        .map((audioModel) => audioModel.audio!.metas.id == event.audioModelMetaId
             ? audioModel.copyWithIsPlaying(false)
             : audioModel)
         .toList();
-    await audioPlayerRepository.updateAllModels(updatedList);
+    await audioPlayerRepository!.updateAllModels(updatedList);
     final AudioPlayerModel currentlyPaused =
-        currentList.firstWhere((model) => model.audio.metas.id == event.audioModelMetaId);
+        currentList.firstWhere((model) => model.audio!.metas.id == event.audioModelMetaId);
     yield AudioPlayerPaused(currentlyPaused, updatedList);
   }
 
   Stream<AudioPlayerState> _mapAudioStoppedToState() async* {
-    final List<AudioPlayerModel> currentList = await audioPlayerRepository.getAll();
+    final List<AudioPlayerModel> currentList = await audioPlayerRepository!.getAll();
     final List<AudioPlayerModel> updatedList = currentList
-        .map(
-            (audioModel) => audioModel.isPlaying ? audioModel.copyWithIsPlaying(false) : audioModel)
+        .map((audioModel) =>
+            audioModel.isPlaying! ? audioModel.copyWithIsPlaying(false) : audioModel)
         .toList();
     yield AudioPlayerReady(updatedList);
-    audioPlayerRepository.updateAllModels(updatedList);
+    audioPlayerRepository!.updateAllModels(updatedList);
   }
 
   Stream<AudioPlayerState> _mapTriggeredPlayAudio(TriggeredPlayAudio event) async* {
     if (state is AudioPlayerReady) {
       final AudioPlayerModel updatedModel = event.audioPlayerModel.copyWithIsPlaying(true);
-      final updatedList = await audioPlayerRepository.updateModel(updatedModel);
+      final updatedList = await audioPlayerRepository!.updateModel(updatedModel);
 
-      await assetsAudioPlayer.open(updatedModel.audio, showNotification: true);
+      await assetsAudioPlayer!.open(updatedModel.audio!, showNotification: true);
 
       yield AudioPlayerPlaying(updatedModel, updatedList);
     }
@@ -120,16 +126,16 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
     if (state is AudioPlayerPaused) {
       if (event.audioPlayerModel.id == (state as AudioPlayerPaused).pausedEntity.id) {
         final AudioPlayerModel updatedModel = event.audioPlayerModel.copyWithIsPlaying(true);
-        final updatedList = await audioPlayerRepository.updateModel(updatedModel);
+        final updatedList = await audioPlayerRepository!.updateModel(updatedModel);
 
-        await assetsAudioPlayer.play();
+        await assetsAudioPlayer!.play();
 
         yield AudioPlayerPlaying(updatedModel, updatedList);
       } else {
         final AudioPlayerModel updatedModel = event.audioPlayerModel.copyWithIsPlaying(true);
-        final updatedList = await audioPlayerRepository.updateModel(updatedModel);
+        final updatedList = await audioPlayerRepository!.updateModel(updatedModel);
 
-        await assetsAudioPlayer.open(updatedModel.audio,
+        await assetsAudioPlayer!.open(updatedModel.audio!,
             showNotification: true,
             respectSilentMode: true,
             headPhoneStrategy: HeadPhoneStrategy.pauseOnUnplug);
@@ -140,9 +146,9 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
 
     if (state is AudioPlayerPlaying) {
       final AudioPlayerModel updatedModel = event.audioPlayerModel.copyWithIsPlaying(true);
-      final updatedList = await audioPlayerRepository.updateModel(updatedModel);
+      final updatedList = await audioPlayerRepository!.updateModel(updatedModel);
 
-      await assetsAudioPlayer.open(updatedModel.audio, showNotification: true);
+      await assetsAudioPlayer!.open(updatedModel.audio!, showNotification: true);
 
       yield AudioPlayerPlaying(updatedModel, updatedList);
     }
@@ -150,18 +156,18 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
 
   Stream<AudioPlayerState> _mapTriggeredPausedAudio(TriggeredPauseAudio event) async* {
     final AudioPlayerModel updatedModel = event.audioPlayerModel.copyWithIsPlaying(false);
-    final updatedList = await audioPlayerRepository.updateModel(updatedModel);
+    final updatedList = await audioPlayerRepository!.updateModel(updatedModel);
 
-    await assetsAudioPlayer.pause();
+    await assetsAudioPlayer!.pause();
 
     yield AudioPlayerPaused(updatedModel, updatedList);
   }
 
   Stream<AudioPlayerState> _mapTriggeredSkipAhead(TriggeredSkipAhead event) async* {
     final AudioPlayerModel updatedModel = event.audioPlayerModel.copyWithIsPlaying(true);
-    final updatedList = await audioPlayerRepository.updateModel(updatedModel);
+    final updatedList = await audioPlayerRepository!.updateModel(updatedModel);
     print("skipping");
-    await assetsAudioPlayer.seekBy(Duration(seconds: 10));
+    await assetsAudioPlayer!.seekBy(Duration(seconds: 10));
 
     yield AudioPlayerPlaying(updatedModel, updatedList);
   }

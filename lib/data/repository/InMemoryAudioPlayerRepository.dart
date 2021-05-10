@@ -5,13 +5,13 @@ import 'AudioPlayerRepository.dart';
 class InMemoryAudioPlayerRepository implements AudioPlayerRepository {
   //this is the object created in main.dart, hence the class name I guess
 
-  final List<AudioPlayerModel> audioPlayerModels;
+  final List<AudioPlayerModel>? audioPlayerModels;
 
   InMemoryAudioPlayerRepository({this.audioPlayerModels});
 
   @override
   Future<AudioPlayerModel> getById(String audioPlayerId) {
-    return Future.value(audioPlayerModels.firstWhere((model) => model.id == audioPlayerId));
+    return Future.value(audioPlayerModels!.firstWhere((model) => model.id == audioPlayerId));
   }
 
   @override
@@ -21,15 +21,15 @@ class InMemoryAudioPlayerRepository implements AudioPlayerRepository {
 
   @override
   Future<List<AudioPlayerModel>> updateModel(AudioPlayerModel updatedModel) {
-    audioPlayerModels[audioPlayerModels.indexWhere((element) => element.id == updatedModel.id)] =
+    audioPlayerModels![audioPlayerModels!.indexWhere((element) => element.id == updatedModel.id)] =
         updatedModel;
     return Future.value(audioPlayerModels);
   }
 
   @override
   Future<List<AudioPlayerModel>> updateAllModels(List<AudioPlayerModel> updatedList) {
-    audioPlayerModels.clear();
-    audioPlayerModels.addAll(updatedList);
+    audioPlayerModels!.clear();
+    audioPlayerModels!.addAll(updatedList);
     return Future.value(audioPlayerModels);
   }
 }

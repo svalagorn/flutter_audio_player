@@ -3,14 +3,14 @@ import 'package:equatable/equatable.dart';
 
 class AudioPlayerModel extends Equatable {
 
-  final String id;
-  final Audio audio;
-  final bool isPlaying;
+  final String? id;
+  final Audio? audio;
+  final bool? isPlaying;
 
   const AudioPlayerModel({this.id, this.audio, this.isPlaying});
 
   @override
-  List<Object> get props => [this.id, this.isPlaying];
+  List<Object?> get props => [this.id, this.isPlaying];
 
   @override
   bool get stringify => true;
